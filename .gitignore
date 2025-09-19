@@ -1,0 +1,9 @@
+# تجاهل كل شيء
+*
+
+# استثناءات (لا تتجاهل)
+!Dashboard.py
+!Sales_24_and_25_cleaned.csv
+
+# تأكد أيضًا ألا يتجاهل مجلد .gitignore نفسه
+!.gitignore
