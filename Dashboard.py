@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import calendar
 
 st.set_page_config(page_title="2024-2025 Sales Dashboard", layout="wide")
 
@@ -565,7 +566,6 @@ with tabs[3]:
     branch_2025 = df_2025[df_2025["Branch"] == selected_branch_comp]
 
     # ---- Bar Chart ----
-import calendar
 available_months = sorted(
     set(branch_2024["Month"].dt.month.dropna().unique()) |
     set(branch_2025["Month"].dt.month.dropna().unique())

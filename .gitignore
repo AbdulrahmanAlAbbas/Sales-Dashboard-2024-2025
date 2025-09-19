@@ -1,9 +1,7 @@
 # تجاهل كل شيء
 *
 
-# استثناءات (لا تتجاهل)
+# لا تتجاهل الملفات التالية
 !Dashboard.py
 !Sales_24_and_25_cleaned.csv
-
-# تأكد أيضًا ألا يتجاهل مجلد .gitignore نفسه
-!.gitignore
+!requirements.txt
