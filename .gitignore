@@ -2,6 +2,7 @@
 *
 
 # لا تتجاهل الملفات التالية
+!.streamlit/
 !Dashboard.py
 !Sales_24_and_25_cleaned.csv
 !requirements.txt

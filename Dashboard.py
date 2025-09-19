@@ -566,118 +566,119 @@ with tabs[3]:
     branch_2025 = df_2025[df_2025["Branch"] == selected_branch_comp]
 
     # ---- Bar Chart ----
-available_months = sorted(
+    available_months = sorted(
     set(branch_2024["Month"].dt.month.dropna().unique()) |
     set(branch_2025["Month"].dt.month.dropna().unique())
-)
-selected_month = st.selectbox("Select Month", available_months, format_func=lambda m: calendar.month_name[m])
+    )
+    selected_month = st.selectbox("Select Month", available_months, format_func=lambda m: calendar.month_name[m])
 
-# تصفية الشهر المختار
-m24 = branch_2024[branch_2024["Month"].dt.month == selected_month]
-m25 = branch_2025[branch_2025["Month"].dt.month == selected_month]
+    # تصفية الشهر المختار
+    m24 = branch_2024[branch_2024["Month"].dt.month == selected_month]
+    m25 = branch_2025[branch_2025["Month"].dt.month == selected_month]
 
-# قيم كل مقياس لذلك الشهر
-net24, net25   = m24["Net_Sales"].sum(),        m25["Net_Sales"].sum()
-disc24, disc25 = m24["Discount_Amount"].sum(),  m25["Discount_Amount"].sum()
-ord24, ord25   = m24["Orders"].sum(),           m25["Orders"].sum()
+    # قيم كل مقياس لذلك الشهر
+    net24, net25   = m24["Net_Sales"].sum(),        m25["Net_Sales"].sum()
+    disc24, disc25 = m24["Discount_Amount"].sum(),  m25["Discount_Amount"].sum()
+    ord24, ord25   = m24["Orders"].sum(),           m25["Orders"].sum()
 
-# ---- Bar Chart: فقط بارين (2024 vs 2025) للشهر المختار ----
-fig_comp = go.Figure()
+    # ---- Bar Chart: فقط بارين (2024 vs 2025) للشهر المختار ----
+    fig_comp = go.Figure()
 
-# Net Sales
-fig_comp.add_trace(go.Bar(
-    x=["2024"], y=[net24],
-    name="Net Sales 2024",
-    marker_color="#27ae60",
-    width=0.35, visible=True,
-    texttemplate="%{y:,.0f}", 
-    textposition="inside",
-    textfont=dict(size=20, color="white")
-))
-fig_comp.add_trace(go.Bar(
-    x=["2025"], y=[net25],
-    name="Net Sales 2025",
-    marker_color="#2ecc71",
-    width=0.35, visible=True,
-    texttemplate="%{y:,.0f}", 
-    textposition="inside",
-    textfont=dict(size=20, color="white")
-))
+    # Net Sales
+    fig_comp.add_trace(go.Bar(
+        x=["2024"], y=[net24],
+        name="Net Sales 2024",
+        marker_color="#27ae60",
+        width=0.35, visible=True,
+        texttemplate="%{y:,.0f}", 
+        textposition="inside",
+        textfont=dict(size=20, color="white")
+    ))
+    
+    fig_comp.add_trace(go.Bar(
+        x=["2025"], y=[net25],
+        name="Net Sales 2025",
+        marker_color="#2ecc71",
+        width=0.35, visible=True,
+        texttemplate="%{y:,.0f}", 
+        textposition="inside",
+        textfont=dict(size=20, color="white")
+    ))
 
-# Discounts
-fig_comp.add_trace(go.Bar(
-    x=["2024"], y=[disc24],
-    name="Discounts 2024",
-    marker_color="darkred",
-    width=0.35, visible=False,
-    texttemplate="%{y:,.0f}", 
-    textposition="inside",
-    textfont=dict(size=20, color="white")
-))
+    # Discounts
+    fig_comp.add_trace(go.Bar(
+        x=["2024"], y=[disc24],
+        name="Discounts 2024",
+        marker_color="darkred",
+        width=0.35, visible=False,
+        texttemplate="%{y:,.0f}", 
+        textposition="inside",
+        textfont=dict(size=20, color="white")
+    ))
 
-fig_comp.add_trace(go.Bar(
-    x=["2025"], y=[disc25],
-    name="Discounts 2025",
-    marker_color="red",
-    width=0.35, visible=False,
-    texttemplate="%{y:,.0f}", 
-    textposition="inside",
-    textfont=dict(size=20, color="white")
-))
+    fig_comp.add_trace(go.Bar(
+        x=["2025"], y=[disc25],
+        name="Discounts 2025",
+        marker_color="red",
+        width=0.35, visible=False,
+        texttemplate="%{y:,.0f}", 
+        textposition="inside",
+        textfont=dict(size=20, color="white")
+    ))
 
-# Orders
-fig_comp.add_trace(go.Bar(
-    x=["2024"], y=[ord24],
-    name="Orders 2024",
-    marker_color="navy",
-    width=0.35, visible=False,
-    texttemplate="%{y:,.0f}", 
-    textposition="inside",
-    textfont=dict(size=20, color="white")
-))
+    # Orders
+    fig_comp.add_trace(go.Bar(
+        x=["2024"], y=[ord24],
+        name="Orders 2024",
+        marker_color="navy",
+        width=0.35, visible=False,
+        texttemplate="%{y:,.0f}", 
+        textposition="inside",
+        textfont=dict(size=20, color="white")
+    ))
 
-fig_comp.add_trace(go.Bar(
-    x=["2025"], y=[ord25],
-    name="Orders 2025",
-    marker_color="blue",
-    width=0.35, visible=False,
-    texttemplate="%{y:,.0f}", 
-    textposition="inside",
-    textfont=dict(size=20, color="white")
-))
+    fig_comp.add_trace(go.Bar(
+        x=["2025"], y=[ord25],
+        name="Orders 2025",
+        marker_color="blue",
+        width=0.35, visible=False,
+        texttemplate="%{y:,.0f}", 
+        textposition="inside",
+        textfont=dict(size=20, color="white")
+    ))
 
-# اجعل محور X تصنيفيًا (فقط 2024 و 2025)
-fig_comp.update_xaxes(type="category")
+    # اجعل محور X تصنيفيًا (فقط 2024 و 2025)
+    fig_comp.update_xaxes(type="category")
 
-# Buttons menu
-fig_comp.update_layout(
-    barmode="group",
-    updatemenus=[
-        dict(
-            type="buttons",
-            direction="left",
-            buttons=[
-                dict(label="Net Sales",
-                     method="update",
-                     args=[{"visible": [True, True, False, False, False, False]},
-                           {"title": {"text": f"Net Sales in {calendar.month_name[selected_month]} (2024 vs 2025)"}}]),
-                dict(label="Discounts",
-                     method="update",
-                     args=[{"visible": [False, False, True, True, False, False]},
-                           {"title": {"text": f"Discounts in {calendar.month_name[selected_month]} (2024 vs 2025)"}}]),
-                dict(label="Orders",
-                     method="update",
-                     args=[{"visible": [False, False, False, False, True, True]},
-                           {"title": {"text": f"Orders in {calendar.month_name[selected_month]} (2024 vs 2025)"}}]),
-            ],
-            x=0.5, y=1.15, xanchor="center", yanchor="top"
-        )
-    ],
-    title={"text": f"Net Sales in {calendar.month_name[selected_month]} (2024 vs 2025)"},
-    showlegend=True
-)
+    # Buttons menu
+    fig_comp.update_layout(
+        barmode="group",
+        updatemenus=[
+            dict(
+                type="buttons",
+                direction="left",
+                buttons=[
+                    dict(label="Net Sales",
+                        method="update",
+                        args=[{"visible": [True, True, False, False, False, False]},
+                            {"title": {"text": f"Net Sales in {calendar.month_name[selected_month]} (2024 vs 2025)"}}]),
+                    dict(label="Discounts",
+                        method="update",
+                        args=[{"visible": [False, False, True, True, False, False]},
+                            {"title": {"text": f"Discounts in {calendar.month_name[selected_month]} (2024 vs 2025)"}}]),
+                    dict(label="Orders",
+                        method="update",
+                        args=[{"visible": [False, False, False, False, True, True]},
+                            {"title": {"text": f"Orders in {calendar.month_name[selected_month]} (2024 vs 2025)"}}]),
+                ],
+                x=0.5, y=1.15, xanchor="center", yanchor="top"
+            )
+        ],
+        title={"text": f"Net Sales in {calendar.month_name[selected_month]} (2024 vs 2025)"},
+        showlegend=True
+    )
 
-# أرقام صحيحة فقط على محور Y
-fig_comp.update_yaxes(tickformat="d")
+    # أرقام صحيحة فقط على محور Y
+    fig_comp.update_yaxes(tickformat="d")
 
-st.plotly_chart(fig_comp, use_container_width=True)
+    st.plotly_chart(fig_comp, use_container_width=True)
