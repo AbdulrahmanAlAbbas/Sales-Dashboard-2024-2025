@@ -3,6 +3,7 @@
 
 # لا تتجاهل الملفات التالية
 !.streamlit/
+!.streamlit/config.toml
 !Dashboard.py
 !Sales_24_and_25_cleaned.csv
 !requirements.txt
