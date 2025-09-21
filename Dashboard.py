@@ -26,8 +26,12 @@ with col2:
     )
 
 # Load data
-df = pd.read_csv("Sales_24_and_25_cleaned.csv")
-df["Month"] = pd.to_datetime(df["Month"], errors="coerce")
+@st.cache_data
+def load_data():
+    df = pd.read_csv("Sales_24_and_25_cleaned.csv")
+    df["Month"] = pd.to_datetime(df["Month"], errors="coerce")
+    return df
+df = load_data()
 
 # Tabs
 tabs = st.tabs(["📊 Overview", "📅 2024", "📅 2025", "⚖ Comparison"])
@@ -88,7 +92,25 @@ st.markdown("""
         [data-testid="stSelectbox"] {
             margin-bottom: 2px !important;  /* قللتها من 20px إلى 8px */
         }
-    </style>
+        
+        [data-testid="stPlotlyChart"] > div,
+            .stPlotlyChart > div,
+            .plot-card {
+            background: #fff !important;
+            border-radius: 15px !important;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2) !important;
+            padding: 10px !important;
+            margin: 10px 0 !important;            
+            overflow: hidden !important;
+            max-width: 98.4% !important;      /* نفس الـ container */
+        }
+
+        /* زيادة نعومة زوايا الكانفس داخليًا */
+        .plot-card .js-plotly-plot,
+        .stPlotlyChart .js-plotly-plot {
+        border-radius: 15px !important;
+        } 
+         </style>
     """, unsafe_allow_html=True)
 
 # ---------------- Tab 1 ----------------
