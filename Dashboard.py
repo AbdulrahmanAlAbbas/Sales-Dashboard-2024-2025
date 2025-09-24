@@ -7,7 +7,7 @@ import calendar
 st.set_page_config(page_title="2024-2025 Sales Dashboard", layout="wide")
 
 # ---- Title with Logo ----
-col1, col2 = st.columns([7, 1])  # العنوان أوسع، الشعار أصغر
+col1, col2 = st.columns([7, 1]) 
 
 with col1:
     st.markdown(
@@ -88,9 +88,8 @@ st.markdown("""
         margin: 10px 0;
         }
         
-         /* ✅ هنا إضافة التحكم بالمسافة بين الفلتر والتشارت */
         [data-testid="stSelectbox"] {
-            margin-bottom: 2px !important;  /* قللتها من 20px إلى 8px */
+            margin-bottom: 2px !important;  
         }
         
         [data-testid="stPlotlyChart"] > div,
@@ -102,10 +101,9 @@ st.markdown("""
             padding: 10px !important;
             margin: 10px 0 !important;            
             overflow: hidden !important;
-            max-width: 98.4% !important;      /* نفس الـ container */
+            max-width: 98.4% !important;      
         }
 
-        /* زيادة نعومة زوايا الكانفس داخليًا */
         .plot-card .js-plotly-plot,
         .stPlotlyChart .js-plotly-plot {
         border-radius: 15px !important;
@@ -704,3 +702,96 @@ with tabs[3]:
     fig_comp.update_yaxes(tickformat="d")
 
     st.plotly_chart(fig_comp, use_container_width=True)
+
+    # ---- Aggregated by Branch (Across 2024 + 2025) ----
+    st.markdown("<h4>Total by Branch (2024 + 2025)</h4>", unsafe_allow_html=True)
+
+    # فلتر لاختيار أكثر من فرع
+    selected_branches_total = st.multiselect(
+        "Select Branches (Total across 2024+2025)", 
+        branches_comp, 
+        default=branches_comp[:2]
+    )
+
+    if selected_branches_total:   # ✅ إذا فيه فروع مختارة
+        branch_multi = df[df["Branch"].isin(selected_branches_total)]
+
+        # حساب الإجماليات لكل فرع عبر السنتين
+        totals_by_branch = branch_multi.groupby("Branch").agg({
+            "Net_Sales": "sum",
+            "Discount_Amount": "sum",
+            "Orders": "sum"
+        }).reset_index()
+
+        # ---- Bar Chart ----
+        fig_total = go.Figure()
+
+        # Net Sales
+        fig_total.add_trace(go.Bar(
+            x=totals_by_branch["Branch"], 
+            y=totals_by_branch["Net_Sales"],
+            name="Net Sales",
+            marker_color="#2ecc71",
+            texttemplate="%{y:,.0f}",
+            textposition="inside",
+            textfont=dict(size=18, color="white")
+        ))
+
+        # Discounts
+        fig_total.add_trace(go.Bar(
+            x=totals_by_branch["Branch"], 
+            y=totals_by_branch["Discount_Amount"],
+            name="Discounts",
+            marker_color="red",
+            visible=False,
+            texttemplate="%{y:,.0f}",
+            textposition="inside",
+            textfont=dict(size=18, color="white")
+        ))
+
+        # Orders
+        fig_total.add_trace(go.Bar(
+            x=totals_by_branch["Branch"], 
+            y=totals_by_branch["Orders"],
+            name="Orders",
+            marker_color="blue",
+            visible=False,
+            texttemplate="%{y:,.0f}",
+            textposition="inside",
+            textfont=dict(size=18, color="white")
+        ))
+
+        # إعداد الأزرار
+        fig_total.update_layout(
+            barmode="group",
+            updatemenus=[
+                dict(
+                    type="buttons",
+                    direction="left",
+                    buttons=[
+                        dict(label="Net Sales",
+                            method="update",
+                            args=[{"visible": [True, False, False]},
+                                {"title": {"text": "Total Net Sales (2024+2025)"}}]),
+                        dict(label="Discounts",
+                            method="update",
+                            args=[{"visible": [False, True, False]},
+                                {"title": {"text": "Total Discounts (2024+2025)"}}]),
+                        dict(label="Orders",
+                            method="update",
+                            args=[{"visible": [False, False, True]},
+                                {"title": {"text": "Total Orders (2024+2025)"}}]),
+                    ],
+                    x=0.5, y=1.15, xanchor="center", yanchor="top"
+                )
+            ],
+            title={"text": "Total Net Sales (2024+2025)"},
+            showlegend=True
+        )
+
+        fig_total.update_yaxes(tickformat="d")
+
+        st.plotly_chart(fig_total, use_container_width=True)
+
+    else:   # ✅ إذا ما فيه ولا فرع محدد
+        st.info("Please select at least one branch to display the chart.")
