@@ -122,6 +122,9 @@ with tabs[0]:
     total_discount = df["Discount_Amount"].sum()
     total_orders = df["Orders"].sum()
     
+    st.subheader("📊 Total Numbers for Branchs Performance in 2024 + 2025")
+    st.write("")
+
     # ---- First row: 4 KPIs ----
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -161,7 +164,10 @@ with tabs[0]:
             """, unsafe_allow_html=True
         )
     st.markdown("<div style='margin-bottom:15px;'></div>", unsafe_allow_html=True)
-    
+    st.markdown("<hr style='border:2px solid #007BFF'>", unsafe_allow_html=True)
+
+    st.subheader("📊 Performance of the Selected Branch in 2024 + 2025")
+
     # ---- Branch filter ----
     branches = sorted(df["Branch"].unique())
     selected_branch = st.selectbox("Select Branch", branches)
@@ -244,7 +250,33 @@ with tabs[0]:
     )
 
     st.plotly_chart(fig, use_container_width=True)
+    st.markdown("<hr style='border:2px solid #007BFF'>", unsafe_allow_html=True)
+    
+    # ---- Branch Contribution ----
+    st.markdown("### 🏬 Percentage of Contribution of Each Branch to Total Sales 2024 + 2025")
 
+    # ---- حساب مساهمة كل فرع ----
+    totals_by_branch = df.groupby("Branch").agg({
+        "Net_Sales": "sum"
+    }).reset_index()
+
+    # إجمالي المبيعات لكل الفروع
+    total_sales = totals_by_branch["Net_Sales"].sum()
+
+    # حساب نسبة المساهمة
+    totals_by_branch["Contribution %"] = (totals_by_branch["Net_Sales"] / total_sales * 100).round(2)
+
+    # ترتيب من الأعلى إلى الأقل
+    totals_by_branch = totals_by_branch.sort_values("Net_Sales", ascending=False).reset_index(drop=True)
+
+    # عرض في ستريم ليت كجدول
+    st.dataframe(
+    totals_by_branch.style.format({
+        "Net_Sales": "{:,.0f}",
+        "Contribution %": "{:.2f}%"
+    }),
+    use_container_width=True
+    )
 
     # ---- End Container ----
     st.markdown('</div>', unsafe_allow_html=True)
@@ -263,6 +295,9 @@ with tabs[1]:
     total_net_2024 = df_2024["Net_Sales"].sum()
     total_discount_2024 = df_2024["Discount_Amount"].sum()
     total_orders_2024 = df_2024["Orders"].sum()
+
+    st.subheader("📊 Total Numbers for Branchs Performance in 2024")
+    st.write("")
 
     # ---- First row: 3 KPIs ----
     col1, col2, col3 = st.columns(3)
@@ -303,6 +338,9 @@ with tabs[1]:
         )
 
     st.markdown("<div style='margin-bottom:15px;'></div>", unsafe_allow_html=True)
+    st.markdown("<hr style='border:2px solid #007BFF'>", unsafe_allow_html=True)
+
+    st.subheader("📊 Performance of the Selected Branch in 2024")
 
     # ---- Branch filter (2024 فقط) ----
     branches_2024 = sorted(df_2024["Branch"].unique())
@@ -402,6 +440,9 @@ with tabs[2]:
     total_discount_2025 = df_2025["Discount_Amount"].sum()
     total_orders_2025 = df_2025["Orders"].sum()
 
+    st.subheader("📊 Total Numbers for Branchs Performance in 2025")
+    st.write("")
+
     # ---- First row: 3 KPIs ----
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -441,6 +482,9 @@ with tabs[2]:
         )
 
     st.markdown("<div style='margin-bottom:15px;'></div>", unsafe_allow_html=True)
+    st.markdown("<hr style='border:2px solid #007BFF'>", unsafe_allow_html=True)
+
+    st.subheader("📊 Performance of the Selected Branch in 2025")
 
     # ---- Branch filter (2025 فقط) ----
     branches_2025 = sorted(df_2025["Branch"].unique())
@@ -545,6 +589,9 @@ with tabs[3]:
     disc_growth = ((disc_2025 - disc_2024) / disc_2024) * 100 if disc_2024 != 0 else 0
     orders_growth = ((orders_2025 - orders_2024) / orders_2024) * 100 if orders_2024 != 0 else 0
 
+    st.subheader("📊 Total of Year-over-Year Growth Between 2024 → 2025")
+    st.write("")
+
     # ---- First row: 3 KPIs ----
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -576,101 +623,239 @@ with tabs[3]:
         )
 
     st.markdown("<div style='margin-bottom:15px;'></div>", unsafe_allow_html=True)
+    st.markdown("<hr style='border:2px solid #007BFF'>", unsafe_allow_html=True)
+    
+    # ---- عنوان ----
+    st.subheader("📊 Year-over-Year Growth for Selected Branch Between 2024 → 2025")
+    st.write("")
+
+    # ---- Branch filter ----
+    branches = sorted(df["Branch"].unique())
+    selected_branch = st.selectbox("🏬 Select Branch", branches)
+
+    # ---- فلترة الداتا على الفرع المختار ----
+    df_branch = df[df["Branch"] == selected_branch]
+
+    # ---- تقسيم حسب السنوات ----
+    df_2024 = df_branch[df_branch["Year"] == 2024]
+    df_2025 = df_branch[df_branch["Year"] == 2025]
+
+    # ---- إجماليات ----
+    net_2024, net_2025 = df_2024["Net_Sales"].sum(), df_2025["Net_Sales"].sum()
+    disc_2024, disc_2025 = df_2024["Discount_Amount"].sum(), df_2025["Discount_Amount"].sum()
+    orders_2024, orders_2025 = df_2024["Orders"].sum(), df_2025["Orders"].sum()
+
+    # ---- النسب ----
+    net_growth = ((net_2025 - net_2024) / net_2024) * 100 if net_2024 != 0 else 0
+    disc_growth = ((disc_2025 - disc_2024) / disc_2024) * 100 if disc_2024 != 0 else 0
+    orders_growth = ((orders_2025 - orders_2024) / orders_2024) * 100 if orders_2024 != 0 else 0
+
+    # ---- First row: 3 KPIs ----
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.markdown(
+            f"""
+            <div class="metric-card">
+                <h4>Net Sales Growth</h4>
+                <h2>{net_growth:.1f}%</h2>
+            </div>
+            """, unsafe_allow_html=True
+        )
+
+    with col2:
+        st.markdown(
+            f"""
+            <div class="metric-card">
+                <h4>Discounts Growth</h4>
+                <h2>{disc_growth:.1f}%</h2>
+            </div>
+            """, unsafe_allow_html=True
+        )
+
+    with col3:
+        st.markdown(
+            f"""
+            <div class="metric-card">
+                <h4>Orders Growth</h4>
+                <h2>{orders_growth:.1f}%</h2>
+            </div>
+            """, unsafe_allow_html=True
+        )
+
+    # ---- خط فاصل ----
+    st.markdown("<div style='margin-bottom:15px;'></div>", unsafe_allow_html=True)
+    st.markdown("<hr style='border:2px solid #007BFF'>", unsafe_allow_html=True)
+
+    # ---- Year-over-Year Growth for All Branches 2024 → 2025 ----
+    st.subheader("📊 Year-over-Year Growth for All Branches 2024 → 2025")
+
+    # ---- تقسيم الداتا حسب السنة ----
+    df_2024 = df[df["Year"] == 2024]
+    df_2025 = df[df["Year"] == 2025]
+
+    # ---- إجماليات لكل فرع ----
+    totals_2024 = df_2024.groupby("Branch").agg({
+        "Net_Sales": "sum",
+        "Discount_Amount": "sum",
+        "Orders": "sum"
+    }).reset_index()
+
+    totals_2025 = df_2025.groupby("Branch").agg({
+        "Net_Sales": "sum",
+        "Discount_Amount": "sum",
+        "Orders": "sum"
+    }).reset_index()
+
+    # ---- دمج ----
+    growth_df = totals_2024.merge(totals_2025, on="Branch", suffixes=("_2024", "_2025"), how="outer").fillna(0)
+
+    # ---- حساب النمو مع معالجة القيم صفر ----
+    def safe_growth(val_2024, val_2025):
+        if val_2024 == 0:
+            return 0
+        return ((val_2025 - val_2024) / val_2024) * 100
+
+    growth_df["Net_Sales Growth %"] = growth_df.apply(lambda row: safe_growth(row["Net_Sales_2024"], row["Net_Sales_2025"]), axis=1)
+    growth_df["Discounts Growth %"] = growth_df.apply(lambda row: safe_growth(row["Discount_Amount_2024"], row["Discount_Amount_2025"]), axis=1)
+    growth_df["Orders Growth %"] = growth_df.apply(lambda row: safe_growth(row["Orders_2024"], row["Orders_2025"]), axis=1)
+
+    # ---- إبقاء فقط النسب ----
+    growth_df = growth_df[["Branch", "Net_Sales Growth %", "Discounts Growth %", "Orders Growth %"]]
+
+    # ---- تنسيقات الألوان ----
+    def highlight_growth(val):
+        color = ""
+        if val > 0:
+            color = "background-color: #d4edda; color: green;"   # أخضر فاتح
+        elif val < 0:
+            color = "background-color: #f8d7da; color: red;"     # أحمر فاتح
+        else:
+            color = "background-color: #fff3cd; color: #856404;" # أصفر فاتح
+        return color
+
+    styled_df = (
+        growth_df
+        .style
+        .format("{:.1f}%", subset=["Net_Sales Growth %", "Discounts Growth %", "Orders Growth %"])
+        .applymap(highlight_growth, subset=["Net_Sales Growth %", "Discounts Growth %", "Orders Growth %"])
+    )
+
+    # ---- عرض ----
+    st.dataframe(styled_df, use_container_width=True)
+    st.markdown("<hr style='border:2px solid #007BFF'>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-bottom:15px;'></div>", unsafe_allow_html=True)
+
+    st.subheader("📊 Comparing the Performance of a Specific Branch Between Two Different Periods")
 
     # ---- Branch filter ----
     branches_comp = sorted(df["Branch"].unique())
-    selected_branch_comp = st.selectbox("Select Branch (Comparison)", branches_comp)
+    selected_branch_comp = st.selectbox("Select Branch (Comparison)", branches_comp, key="branch_comp")
 
-    # Filtered data
-    branch_2024 = df_2024[df_2024["Branch"] == selected_branch_comp]
-    branch_2025 = df_2025[df_2025["Branch"] == selected_branch_comp]
+    branch_data = df[df["Branch"] == selected_branch_comp]
 
-    # ---- Bar Chart ----
-    available_months = sorted(
-    set(branch_2024["Month"].dt.month.dropna().unique()) |
-    set(branch_2025["Month"].dt.month.dropna().unique())
-    )
-    selected_month = st.selectbox("Select Month", available_months, format_func=lambda m: calendar.month_name[m])
+    # ------------------ الفترة الأولى ------------------
+    st.markdown("<h5>📅 Select the First Period</h5>", unsafe_allow_html=True)
+    with st.container():
+        col1, col2, col3, col4 = st.columns([1,1,1,1])
 
-    # تصفية الشهر المختار
-    m24 = branch_2024[branch_2024["Month"].dt.month == selected_month]
-    m25 = branch_2025[branch_2025["Month"].dt.month == selected_month]
+        with col1:
+            start_month1 = st.selectbox("Start Month", list(range(1, 13)),
+                                        format_func=lambda m: calendar.month_name[m], key="start_month1")
+        with col2:
+            start_year1 = st.selectbox("Start Year", sorted(df["Year"].unique()), key="start_year1")
 
-    # قيم كل مقياس لذلك الشهر
-    net24, net25   = m24["Net_Sales"].sum(),        m25["Net_Sales"].sum()
-    disc24, disc25 = m24["Discount_Amount"].sum(),  m25["Discount_Amount"].sum()
-    ord24, ord25   = m24["Orders"].sum(),           m25["Orders"].sum()
+        with col3:
+            end_month1 = st.selectbox("End Month", list(range(1, 13)),
+                                    format_func=lambda m: calendar.month_name[m], key="end_month1")
+        with col4:
+            end_year1 = st.selectbox("End Year", sorted(df["Year"].unique()), key="end_year1")
 
-    # ---- Bar Chart: فقط بارين (2024 vs 2025) للشهر المختار ----
+    # ------------------ الفترة الثانية ------------------
+    st.markdown("<h5>📅 Select the Second Period</h5>", unsafe_allow_html=True)
+    with st.container():
+        col1, col2, col3, col4 = st.columns([1,1,1,1])
+
+        with col1:
+            start_month2 = st.selectbox("Start Month", list(range(1, 13)),
+                                        format_func=lambda m: calendar.month_name[m], key="start_month2")
+        with col2:
+            start_year2 = st.selectbox("Start Year", sorted(df["Year"].unique()), key="start_year2")
+
+        with col3:
+            end_month2 = st.selectbox("End Month", list(range(1, 13)),
+                                    format_func=lambda m: calendar.month_name[m], key="end_month2")
+        with col4:
+            end_year2 = st.selectbox("End Year", sorted(df["Year"].unique()), key="end_year2")
+
+    # ------------------ فلترة البيانات ------------------
+    # تحويل إلى تواريخ بداية ونهاية
+    start_date1 = pd.to_datetime(f"{start_year1}-{start_month1}-01")
+    end_date1   = pd.to_datetime(f"{end_year1}-{end_month1}-28")
+    start_date2 = pd.to_datetime(f"{start_year2}-{start_month2}-01")
+    end_date2   = pd.to_datetime(f"{end_year2}-{end_month2}-28")
+
+    # فلترة
+    period1 = branch_data[(branch_data["Month"] >= start_date1) & (branch_data["Month"] <= end_date1)]
+    period2 = branch_data[(branch_data["Month"] >= start_date2) & (branch_data["Month"] <= end_date2)]
+
+    # القيم
+    net1, net2   = period1["Net_Sales"].sum(),       period2["Net_Sales"].sum()
+    disc1, disc2 = period1["Discount_Amount"].sum(), period2["Discount_Amount"].sum()
+    ord1, ord2   = period1["Orders"].sum(),          period2["Orders"].sum()
+
+    # ------------------ التشارت ------------------
     fig_comp = go.Figure()
 
     # Net Sales
     fig_comp.add_trace(go.Bar(
-        x=["2024"], y=[net24],
-        name="Net Sales 2024",
+        x=["Period 1"], y=[net1],
+        name=f"Net Sales {start_date1:%b %Y} - {end_date1:%b %Y}",
         marker_color="#27ae60",
-        width=0.35, visible=True,
-        texttemplate="%{y:,.0f}", 
-        textposition="inside",
+        texttemplate="%{y:,.0f}", textposition="inside",
         textfont=dict(size=20, color="white")
     ))
-    
     fig_comp.add_trace(go.Bar(
-        x=["2025"], y=[net25],
-        name="Net Sales 2025",
+        x=["Period 2"], y=[net2],
+        name=f"Net Sales {start_date2:%b %Y} - {end_date2:%b %Y}",
         marker_color="#2ecc71",
-        width=0.35, visible=True,
-        texttemplate="%{y:,.0f}", 
-        textposition="inside",
+        texttemplate="%{y:,.0f}", textposition="inside",
         textfont=dict(size=20, color="white")
     ))
 
     # Discounts
     fig_comp.add_trace(go.Bar(
-        x=["2024"], y=[disc24],
-        name="Discounts 2024",
-        marker_color="darkred",
-        width=0.35, visible=False,
-        texttemplate="%{y:,.0f}", 
-        textposition="inside",
+        x=["Period 1"], y=[disc1],
+        name=f"Discounts {start_date1:%b %Y} - {end_date1:%b %Y}",
+        marker_color="darkred", visible=False,
+        texttemplate="%{y:,.0f}", textposition="inside",
         textfont=dict(size=20, color="white")
     ))
-
     fig_comp.add_trace(go.Bar(
-        x=["2025"], y=[disc25],
-        name="Discounts 2025",
-        marker_color="red",
-        width=0.35, visible=False,
-        texttemplate="%{y:,.0f}", 
-        textposition="inside",
+        x=["Period 2"], y=[disc2],
+        name=f"Discounts {start_date2:%b %Y} - {end_date2:%b %Y}",
+        marker_color="red", visible=False,
+        texttemplate="%{y:,.0f}", textposition="inside",
         textfont=dict(size=20, color="white")
     ))
 
     # Orders
     fig_comp.add_trace(go.Bar(
-        x=["2024"], y=[ord24],
-        name="Orders 2024",
-        marker_color="navy",
-        width=0.35, visible=False,
-        texttemplate="%{y:,.0f}", 
-        textposition="inside",
+        x=["Period 1"], y=[ord1],
+        name=f"Orders {start_date1:%b %Y} - {end_date1:%b %Y}",
+        marker_color="navy", visible=False,
+        texttemplate="%{y:,.0f}", textposition="inside",
         textfont=dict(size=20, color="white")
     ))
-
     fig_comp.add_trace(go.Bar(
-        x=["2025"], y=[ord25],
-        name="Orders 2025",
-        marker_color="blue",
-        width=0.35, visible=False,
-        texttemplate="%{y:,.0f}", 
-        textposition="inside",
+        x=["Period 2"], y=[ord2],
+        name=f"Orders {start_date2:%b %Y} - {end_date2:%b %Y}",
+        marker_color="blue", visible=False,
+        texttemplate="%{y:,.0f}", textposition="inside",
         textfont=dict(size=20, color="white")
     ))
 
-    # اجعل محور X تصنيفيًا (فقط 2024 و 2025)
     fig_comp.update_xaxes(type="category")
-
-    # Buttons menu
     fig_comp.update_layout(
         barmode="group",
         updatemenus=[
@@ -678,45 +863,87 @@ with tabs[3]:
                 type="buttons",
                 direction="left",
                 buttons=[
-                    dict(label="Net Sales",
-                        method="update",
+                    dict(label="Net Sales", method="update",
                         args=[{"visible": [True, True, False, False, False, False]},
-                            {"title": {"text": f"Net Sales in {calendar.month_name[selected_month]} (2024 vs 2025)"}}]),
-                    dict(label="Discounts",
-                        method="update",
+                            {"title": {"text": f"Net Sales Comparison"}}]),
+                    dict(label="Discounts", method="update",
                         args=[{"visible": [False, False, True, True, False, False]},
-                            {"title": {"text": f"Discounts in {calendar.month_name[selected_month]} (2024 vs 2025)"}}]),
-                    dict(label="Orders",
-                        method="update",
+                            {"title": {"text": f"Discounts Comparison"}}]),
+                    dict(label="Orders", method="update",
                         args=[{"visible": [False, False, False, False, True, True]},
-                            {"title": {"text": f"Orders in {calendar.month_name[selected_month]} (2024 vs 2025)"}}]),
+                            {"title": {"text": f"Orders Comparison"}}]),
                 ],
                 x=0.5, y=1.15, xanchor="center", yanchor="top"
             )
         ],
-        title={"text": f"Net Sales in {calendar.month_name[selected_month]} (2024 vs 2025)"},
+        title={"text": f"Comparison: {start_date1:%b %Y}-{end_date1:%b %Y} vs {start_date2:%b %Y}-{end_date2:%b %Y}"},
         showlegend=True
     )
-
-    # أرقام صحيحة فقط على محور Y
     fig_comp.update_yaxes(tickformat="d")
 
     st.plotly_chart(fig_comp, use_container_width=True)
+    st.markdown("<hr style='border:2px solid #007BFF'>", unsafe_allow_html=True)
 
-    # ---- Aggregated by Branch (Across 2024 + 2025) ----
-    st.markdown("<h4>Total by Branch (2024 + 2025)</h4>", unsafe_allow_html=True)
+    st.subheader("📊 Comparing Two or More Branches in a Specific Period")
+
+    # ---- Aggregated by Branch with Date Range ----
 
     # فلتر لاختيار أكثر من فرع
     selected_branches_total = st.multiselect(
-        "Select Branches (Total across 2024+2025)", 
+        "Select Branches", 
         branches_comp, 
         default=branches_comp[:2]
     )
 
-    if selected_branches_total:   # ✅ إذا فيه فروع مختارة
-        branch_multi = df[df["Branch"].isin(selected_branches_total)]
+    # ------------------ اختيار الفترة ------------------
+    st.markdown("<h5>📅 Select Period</h5>", unsafe_allow_html=True)
 
-        # حساب الإجماليات لكل فرع عبر السنتين
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        start_month = st.selectbox(
+            "Start Month",
+            list(range(1, 13)),
+            format_func=lambda m: calendar.month_name[m],
+            key="start_month",
+            index=0
+        )
+    with col2:
+        start_year = st.selectbox(
+            "Start Year",
+            sorted(df["Year"].unique()),
+            key="start_year",
+            index=0
+        )
+    with col3:
+        end_month = st.selectbox(
+            "End Month",
+            list(range(1, 13)),
+            format_func=lambda m: calendar.month_name[m],
+            key="end_month",
+            index=11   
+        )
+    with col4:
+        end_year = st.selectbox(
+            "End Year",
+            sorted(df["Year"].unique()),
+            key="end_year",
+            index=1
+        )
+
+    # ------------------ فلترة البيانات ------------------
+    start_date = pd.to_datetime(f"{start_year}-{start_month}-01")
+    end_date = pd.to_datetime(f"{end_year}-{end_month}-28")  # نهاية الشهر كافية
+
+    if selected_branches_total:
+        # فلترة البيانات حسب الفروع والفترة
+        branch_multi = df[
+            (df["Branch"].isin(selected_branches_total)) &
+            (df["Month"] >= start_date) & 
+            (df["Month"] <= end_date)
+        ]
+
+        # حساب الإجماليات لكل فرع
         totals_by_branch = branch_multi.groupby("Branch").agg({
             "Net_Sales": "sum",
             "Discount_Amount": "sum",
@@ -772,20 +999,20 @@ with tabs[3]:
                         dict(label="Net Sales",
                             method="update",
                             args=[{"visible": [True, False, False]},
-                                {"title": {"text": "Total Net Sales (2024+2025)"}}]),
+                                {"title": {"text": f"Net Sales {start_date:%b %Y} → {end_date:%b %Y}"}}]),
                         dict(label="Discounts",
                             method="update",
                             args=[{"visible": [False, True, False]},
-                                {"title": {"text": "Total Discounts (2024+2025)"}}]),
+                                {"title": {"text": f"Discounts {start_date:%b %Y} → {end_date:%b %Y}"}}]),
                         dict(label="Orders",
                             method="update",
                             args=[{"visible": [False, False, True]},
-                                {"title": {"text": "Total Orders (2024+2025)"}}]),
+                                {"title": {"text": f"Orders {start_date:%b %Y} → {end_date:%b %Y}"}}]),
                     ],
                     x=0.5, y=1.15, xanchor="center", yanchor="top"
                 )
             ],
-            title={"text": "Total Net Sales (2024+2025)"},
+            title={"text": f"Net Sales {start_date:%b %Y} → {end_date:%b %Y}"},
             showlegend=True
         )
 
@@ -793,5 +1020,5 @@ with tabs[3]:
 
         st.plotly_chart(fig_total, use_container_width=True)
 
-    else:   # ✅ إذا ما فيه ولا فرع محدد
+    else:
         st.info("Please select at least one branch to display the chart.")
