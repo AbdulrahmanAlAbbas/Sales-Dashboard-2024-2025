@@ -28,7 +28,7 @@ with col2:
 # Load data
 @st.cache_data
 def load_data():
-    df = pd.read_csv("Sales_24_and_25_cleaned.csv")
+    df = pd.read_csv("Sales_24_and_25_cleanedd.csv")
     df["Month"] = pd.to_datetime(df["Month"], errors="coerce")
     return df
 df = load_data()
@@ -599,7 +599,9 @@ with tabs[3]:
             f"""
             <div class="metric-card">
                 <h4>Net Sales Growth</h4>
-                <h2>{net_growth:.1f}%</h2>
+                <h2 style="color:{'green' if net_growth > 0 else 'red' if net_growth < 0 else 'orange'};">
+                    {net_growth:.1f}%
+                </h2>
             </div>
             """, unsafe_allow_html=True
         )
@@ -608,7 +610,9 @@ with tabs[3]:
             f"""
             <div class="metric-card">
                 <h4>Discounts Growth</h4>
-                <h2>{disc_growth:.1f}%</h2>
+                <h2 style="color:{'green' if disc_growth > 0 else 'red' if disc_growth < 0 else 'orange'};">
+                    {disc_growth:.1f}%
+                </h2>
             </div>
             """, unsafe_allow_html=True
         )
@@ -617,7 +621,9 @@ with tabs[3]:
             f"""
             <div class="metric-card">
                 <h4>Orders Growth</h4>
-                <h2>{orders_growth:.1f}%</h2>
+                <h2 style="color:{'green' if orders_growth > 0 else 'red' if orders_growth < 0 else 'orange'};">
+                    {orders_growth:.1f}%
+                </h2>
             </div>
             """, unsafe_allow_html=True
         )
@@ -626,125 +632,126 @@ with tabs[3]:
     st.markdown("<hr style='border:2px solid #007BFF'>", unsafe_allow_html=True)
     
     # ---- عنوان ----
-    st.subheader("📊 Year-over-Year Growth for Selected Branch Between 2024 → 2025")
+    st.subheader("📊 Year-over-Year Growth for Selected Branches Between 2024 → 2025")
     st.write("")
+
+    # ---- Branch filter ----
+    selected_branches = st.multiselect(
+    "🏬 Select Branches",
+    branches,
+    default=[branches[0]]   # ✅ أول فرع كـ ديفولت
+)
+
+    if selected_branches:
+        # ---- فلترة الداتا على الفروع المختارة ----
+        df_selected = df[df["Branch"].isin(selected_branches)]
+
+        # ---- تقسيم حسب السنوات ----
+        df_2024 = df_selected[df_selected["Year"] == 2024]
+        df_2025 = df_selected[df_selected["Year"] == 2025]
+
+        # ---- إجماليات ----
+        net_2024, net_2025 = df_2024["Net_Sales"].sum(), df_2025["Net_Sales"].sum()
+        disc_2024, disc_2025 = df_2024["Discount_Amount"].sum(), df_2025["Discount_Amount"].sum()
+        orders_2024, orders_2025 = df_2024["Orders"].sum(), df_2025["Orders"].sum()
+
+        # ---- دالة تحسب النمو ----
+        def safe_growth(v2024, v2025):
+            if v2024 == 0 and v2025 == 0:
+                return "N/A"
+            elif v2024 == 0 and v2025 != 0:
+                return "N/A"
+            else:
+                return round(((v2025 - v2024) / v2024) * 100, 1)
+
+        net_growth = safe_growth(net_2024, net_2025)
+        disc_growth = safe_growth(disc_2024, disc_2025)
+        orders_growth = safe_growth(orders_2024, orders_2025)
+
+        # ---- دالة تحدد اللون ----
+        def growth_color(val):
+            if isinstance(val, str):  # N/A
+                return "#6c757d"  # رمادي
+            elif val > 0:
+                return "green"
+            elif val < 0:
+                return "red"
+            else:
+                return "orange"  # صفر
+
+        # ---- عرض الكاردز ----
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            st.markdown(
+                f"""
+                <div class="metric-card" style="text-align:center;">
+                    <h4>Net Sales Growth</h4>
+                    <h2 style="color:{growth_color(net_growth)};">{net_growth if isinstance(net_growth,str) else str(net_growth)+'%'}</h2>
+                </div>
+                """, unsafe_allow_html=True
+            )
+
+        with col2:
+            st.markdown(
+                f"""
+                <div class="metric-card" style="text-align:center;">
+                    <h4>Discounts Growth</h4>
+                    <h2 style="color:{growth_color(disc_growth)};">{disc_growth if isinstance(disc_growth,str) else str(disc_growth)+'%'}</h2>
+                </div>
+                """, unsafe_allow_html=True
+            )
+
+        with col3:
+            st.markdown(
+                f"""
+                <div class="metric-card" style="text-align:center;">
+                    <h4>Orders Growth</h4>
+                    <h2 style="color:{growth_color(orders_growth)};">{orders_growth if isinstance(orders_growth,str) else str(orders_growth)+'%'}</h2>
+                </div>
+                """, unsafe_allow_html=True
+            )
+
+    else:
+        st.info("Please select at least one branch to calculate growth.")
+
+    # ---- خط فاصل ----
+    st.markdown("<div style='margin-bottom:15px;'></div>", unsafe_allow_html=True)
+    st.markdown("<hr style='border:2px solid #007BFF'>", unsafe_allow_html=True)
+
+        
+    # ---- تجهيز العمود Month ----
+    df["Month"] = pd.to_datetime(df["Month"], errors="coerce")   # ✅ التحويل مرة وحدة في البداية
+    df["Month_Label"] = df["Month"].dt.strftime("%b %Y")
+
+    st.subheader(f"📊 Average Order Value per Month - {selected_branch}")
 
     # ---- Branch filter ----
     branches = sorted(df["Branch"].unique())
     selected_branch = st.selectbox("🏬 Select Branch", branches)
 
     # ---- فلترة الداتا على الفرع المختار ----
-    df_branch = df[df["Branch"] == selected_branch]
+    df_branch = df[df["Branch"] == selected_branch].copy()
 
-    # ---- تقسيم حسب السنوات ----
-    df_2024 = df_branch[df_branch["Year"] == 2024]
-    df_2025 = df_branch[df_branch["Year"] == 2025]
-
-    # ---- إجماليات ----
-    net_2024, net_2025 = df_2024["Net_Sales"].sum(), df_2025["Net_Sales"].sum()
-    disc_2024, disc_2025 = df_2024["Discount_Amount"].sum(), df_2025["Discount_Amount"].sum()
-    orders_2024, orders_2025 = df_2024["Orders"].sum(), df_2025["Orders"].sum()
-
-    # ---- النسب ----
-    net_growth = ((net_2025 - net_2024) / net_2024) * 100 if net_2024 != 0 else 0
-    disc_growth = ((disc_2025 - disc_2024) / disc_2024) * 100 if disc_2024 != 0 else 0
-    orders_growth = ((orders_2025 - orders_2024) / orders_2024) * 100 if orders_2024 != 0 else 0
-
-    # ---- First row: 3 KPIs ----
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.markdown(
-            f"""
-            <div class="metric-card">
-                <h4>Net Sales Growth</h4>
-                <h2>{net_growth:.1f}%</h2>
-            </div>
-            """, unsafe_allow_html=True
-        )
-
-    with col2:
-        st.markdown(
-            f"""
-            <div class="metric-card">
-                <h4>Discounts Growth</h4>
-                <h2>{disc_growth:.1f}%</h2>
-            </div>
-            """, unsafe_allow_html=True
-        )
-
-    with col3:
-        st.markdown(
-            f"""
-            <div class="metric-card">
-                <h4>Orders Growth</h4>
-                <h2>{orders_growth:.1f}%</h2>
-            </div>
-            """, unsafe_allow_html=True
-        )
-
-    # ---- خط فاصل ----
-    st.markdown("<div style='margin-bottom:15px;'></div>", unsafe_allow_html=True)
-    st.markdown("<hr style='border:2px solid #007BFF'>", unsafe_allow_html=True)
-
-    # ---- Year-over-Year Growth for All Branches 2024 → 2025 ----
-    st.subheader("📊 Year-over-Year Growth for All Branches 2024 → 2025")
-
-    # ---- تقسيم الداتا حسب السنة ----
-    df_2024 = df[df["Year"] == 2024]
-    df_2025 = df[df["Year"] == 2025]
-
-    # ---- إجماليات لكل فرع ----
-    totals_2024 = df_2024.groupby("Branch").agg({
-        "Net_Sales": "sum",
-        "Discount_Amount": "sum",
-        "Orders": "sum"
-    }).reset_index()
-
-    totals_2025 = df_2025.groupby("Branch").agg({
-        "Net_Sales": "sum",
-        "Discount_Amount": "sum",
-        "Orders": "sum"
-    }).reset_index()
-
-    # ---- دمج ----
-    growth_df = totals_2024.merge(totals_2025, on="Branch", suffixes=("_2024", "_2025"), how="outer").fillna(0)
-
-    # ---- حساب النمو مع معالجة القيم صفر ----
-    def safe_growth(val_2024, val_2025):
-        if val_2024 == 0:
-            return 0
-        return ((val_2025 - val_2024) / val_2024) * 100
-
-    growth_df["Net_Sales Growth %"] = growth_df.apply(lambda row: safe_growth(row["Net_Sales_2024"], row["Net_Sales_2025"]), axis=1)
-    growth_df["Discounts Growth %"] = growth_df.apply(lambda row: safe_growth(row["Discount_Amount_2024"], row["Discount_Amount_2025"]), axis=1)
-    growth_df["Orders Growth %"] = growth_df.apply(lambda row: safe_growth(row["Orders_2024"], row["Orders_2025"]), axis=1)
-
-    # ---- إبقاء فقط النسب ----
-    growth_df = growth_df[["Branch", "Net_Sales Growth %", "Discounts Growth %", "Orders Growth %"]]
-
-    # ---- تنسيقات الألوان ----
-    def highlight_growth(val):
-        color = ""
-        if val > 0:
-            color = "background-color: #d4edda; color: green;"   # أخضر فاتح
-        elif val < 0:
-            color = "background-color: #f8d7da; color: red;"     # أحمر فاتح
-        else:
-            color = "background-color: #fff3cd; color: #856404;" # أصفر فاتح
-        return color
-
-    styled_df = (
-        growth_df
-        .style
-        .format("{:.1f}%", subset=["Net_Sales Growth %", "Discounts Growth %", "Orders Growth %"])
-        .applymap(highlight_growth, subset=["Net_Sales Growth %", "Discounts Growth %", "Orders Growth %"])
+    # ---- حساب متوسط قيمة الطلب ----
+    df_branch["Avg_Order_Value"] = df_branch.apply(
+        lambda row: row["Net_Sales"] / row["Orders"] if row["Orders"] > 0 else 0,
+        axis=1
     )
 
-    # ---- عرض ----
-    st.dataframe(styled_df, use_container_width=True)
+    # ---- تجهيز الجدول ----
+    avg_table = df_branch.sort_values("Month")[["Month_Label", "Avg_Order_Value"]]
+
+    # ---- عرض الجدول ----
+    st.dataframe(
+        avg_table.style.format({
+            "Avg_Order_Value": "{:,.2f}"
+        }),
+        use_container_width=True
+    )
+
+    # ---- خط فاصل ----
     st.markdown("<hr style='border:2px solid #007BFF'>", unsafe_allow_html=True)
-    st.markdown("<div style='margin-bottom:15px;'></div>", unsafe_allow_html=True)
 
     st.subheader("📊 Comparing the Performance of a Specific Branch Between Two Different Periods")
 
