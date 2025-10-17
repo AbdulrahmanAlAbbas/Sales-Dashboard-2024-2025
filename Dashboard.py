@@ -28,7 +28,7 @@ with col2:
 # Load data
 @st.cache_data
 def load_data():
-    df = pd.read_csv("Sales_24_and_25_cleanedd.csv")
+    df = pd.read_csv("Sales_2024_2025_up.csv")
     df["Month"] = pd.to_datetime(df["Month"], errors="coerce")
     return df
 df = load_data()
@@ -286,18 +286,25 @@ with tabs[1]:
 
     # ✅ Start main container
     st.markdown('<div class="main-container">', unsafe_allow_html=True)
+    
+    st.subheader("📊 KPIs for Branchs Performance in 2024")
 
     # ---- فلترة بيانات 2024 ----
     df["Year"] = df["Month"].dt.year
     df_2024 = df[df["Year"] == 2024]
+    
+    # ---- Branch Filter ----
+    branches = ["All Branches"] + sorted(df["Branch"].unique())
+    selected_branch_2024 = st.selectbox("🏬 Select Branch (2024)", branches, index=0)
+
+    # ---- فلترة بناءً على الاختيار ----
+    if selected_branch_2024 != "All Branches":
+        df_2024 = df_2024[df_2024["Branch"] == selected_branch_2024]
 
     # ---- KPIs (2024 فقط) ----
     total_net_2024 = df_2024["Net_Sales"].sum()
     total_discount_2024 = df_2024["Discount_Amount"].sum()
     total_orders_2024 = df_2024["Orders"].sum()
-
-    st.subheader("📊 Total Numbers for Branchs Performance in 2024")
-    st.write("")
 
     # ---- First row: 3 KPIs ----
     col1, col2, col3 = st.columns(3)
@@ -335,16 +342,7 @@ with tabs[1]:
                 <h2>{total_orders_2024:,}</h2>
             </div>
             """, unsafe_allow_html=True
-        )
-
-    st.markdown("<div style='margin-bottom:15px;'></div>", unsafe_allow_html=True)
-    st.markdown("<hr style='border:2px solid #007BFF'>", unsafe_allow_html=True)
-
-    st.subheader("📊 Performance of the Selected Branch in 2024")
-
-    # ---- Branch filter (2024 فقط) ----
-    branches_2024 = sorted(df_2024["Branch"].unique())
-    selected_branch_2024 = st.selectbox("Select Branch (2024)", branches_2024)
+        )   
 
     # Filtered data
     branch_df_2024 = df_2024[df_2024["Branch"] == selected_branch_2024]
@@ -431,17 +429,24 @@ with tabs[2]:
     # ✅ Start main container
     st.markdown('<div class="main-container">', unsafe_allow_html=True)
 
+    st.subheader("📊 KPIs for Branchs Performance in 2025")
+
     # ---- فلترة بيانات 2025 ----
     df["Year"] = df["Month"].dt.year
     df_2025 = df[df["Year"] == 2025]
+
+    # ---- Branch Filter ----
+    branches = ["All Branches"] + sorted(df["Branch"].unique())
+    selected_branch = st.selectbox("🏬 Select Branch", branches, index=0)
+
+    # ---- فلترة بناءً على الاختيار ----
+    if selected_branch != "All Branches":
+        df_2025 = df_2025[df_2025["Branch"] == selected_branch]
 
     # ---- KPIs (2025 فقط) ----
     total_net_2025 = df_2025["Net_Sales"].sum()
     total_discount_2025 = df_2025["Discount_Amount"].sum()
     total_orders_2025 = df_2025["Orders"].sum()
-
-    st.subheader("📊 Total Numbers for Branchs Performance in 2025")
-    st.write("")
 
     # ---- First row: 3 KPIs ----
     col1, col2, col3 = st.columns(3)
@@ -481,17 +486,8 @@ with tabs[2]:
             """, unsafe_allow_html=True
         )
 
-    st.markdown("<div style='margin-bottom:15px;'></div>", unsafe_allow_html=True)
-    st.markdown("<hr style='border:2px solid #007BFF'>", unsafe_allow_html=True)
-
-    st.subheader("📊 Performance of the Selected Branch in 2025")
-
-    # ---- Branch filter (2025 فقط) ----
-    branches_2025 = sorted(df_2025["Branch"].unique())
-    selected_branch_2025 = st.selectbox("Select Branch (2025)", branches_2025)
-
     # Filtered data
-    branch_df_2025 = df_2025[df_2025["Branch"] == selected_branch_2025]
+    branch_df_2025 = df_2025[df_2025["Branch"] == selected_branch]
 
     # ---- Chart (2025 فقط) ----
     fig2025 = go.Figure()
@@ -636,11 +632,12 @@ with tabs[3]:
     st.write("")
 
     # ---- Branch filter ----
+    branches = sorted(df["Branch"].unique())
     selected_branches = st.multiselect(
-    "🏬 Select Branches",
-    branches,
-    default=[branches[0]]   # ✅ أول فرع كـ ديفولت
-)
+        "🏬 Select Branches",
+        branches,
+        default=[branches[0]] 
+    )
 
     if selected_branches:
         # ---- فلترة الداتا على الفروع المختارة ----
@@ -742,13 +739,27 @@ with tabs[3]:
     # ---- تجهيز الجدول ----
     avg_table = df_branch.sort_values("Month")[["Month_Label", "Avg_Order_Value"]]
 
-    # ---- عرض الجدول ----
-    st.dataframe(
-        avg_table.style.format({
-            "Avg_Order_Value": "{:,.2f}"
-        }),
-        use_container_width=True
+    # ---- عرض لاين تشارت ----
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=avg_table["Month_Label"],
+        y=avg_table["Avg_Order_Value"],
+        mode="lines+markers",
+        line=dict(color="#007BFF", width=3),
+        marker=dict(size=8),
+        name="Avg Order Value"
+    ))
+
+    fig.update_layout(
+        title=f"📈 Average Order Value per Month - {selected_branch}",
+        xaxis_title="Month",
+        yaxis_title="Average Order Value (SAR)",
+        hovermode="x unified",
+        plot_bgcolor="white"
     )
+
+    st.plotly_chart(fig, use_container_width=True)
 
     # ---- خط فاصل ----
     st.markdown("<hr style='border:2px solid #007BFF'>", unsafe_allow_html=True)
