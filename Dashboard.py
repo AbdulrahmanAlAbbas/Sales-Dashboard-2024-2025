@@ -28,7 +28,7 @@ with col2:
 # Load data
 @st.cache_data
 def load_data():
-    df = pd.read_csv("Sales_2024_2025_up.csv")
+    df = pd.read_csv("Sales_2024_2025_upp.csv")
     df["Month"] = pd.to_datetime(df["Month"], errors="coerce")
     return df
 df = load_data()
@@ -764,13 +764,20 @@ with tabs[3]:
     # ---- خط فاصل ----
     st.markdown("<hr style='border:2px solid #007BFF'>", unsafe_allow_html=True)
 
-    st.subheader("📊 Comparing the Performance of a Specific Branch Between Two Different Periods")
+    st.subheader("📊 Comparing the Performance of a Specific Branches Between Two Different Periods")
 
-    # ---- Branch filter ----
+    # ---- Branch filter (multiple selection) ----
     branches_comp = sorted(df["Branch"].unique())
-    selected_branch_comp = st.selectbox("Select Branch (Comparison)", branches_comp, key="branch_comp")
+    selected_branches_comp = st.multiselect(
+        "🏬 Select Branches (Comparison)",
+        branches_comp,
+        default=[branches_comp[0]],   
+        key="branches_comp"
+    )
 
-    branch_data = df[df["Branch"] == selected_branch_comp]
+    # ---- فلترة البيانات بناءً على الفروع المختارة ----
+    branch_data = df[df["Branch"].isin(selected_branches_comp)]
+
 
     # ------------------ الفترة الأولى ------------------
     st.markdown("<h5>📅 Select the First Period</h5>", unsafe_allow_html=True)
